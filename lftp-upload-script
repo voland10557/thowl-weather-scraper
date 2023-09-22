@@ -1,0 +1,5 @@
+set ftp:ssl-force true
+connect ftp://<server>
+login <user> <pass>
+put -e /home/pi/projects/th-owl-temp-scraper/dummy.json
+
