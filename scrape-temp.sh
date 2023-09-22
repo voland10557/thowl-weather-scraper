@@ -1,32 +1,43 @@
 #!/bin/bash
-wget -q http://www.th-owl.de/hx/campuswetter/HUI/aktuell.php -O aktuell.php
+# download data:
+wget -q http://www.th-owl.de/hx/campuswetter/HUI/aktuell.php -O /home/pi/projects/th-owl-temp-scraper/aktuell.php
+
 # get the timestamp of the latest data update:
-count=$(cat aktuell.php | grep -ob 'Letzte Datenabfrage: ' | grep -oE "[0-9]+")
+count=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -ob 'Letzte Datenabfrage: ' | grep -oE "[0-9]+")
 count2=$((count + 21 +16))
-echo "count2: $count2"
-ts_thowl=$(head -c $count2 aktuell.php | tail -c 16)
+#echo "count2: $count2"
+ts_thowl=$(head -c $count2 /home/pi/projects/th-owl-temp-scraper/aktuell.php | tail -c 16)
 echo "ts_thowl: $ts_thowl"
 
 # get the temperature in 2 m height
-#tempcount=$(cat aktuell.php | grep -ob -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> ([0-9]+)([.][0-9]+)?' | sed -r 's/^([0-9]+).+$/\1/')
-match=$(cat aktuell.php | grep -o -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> ([0-9]+)([.][0-9]+)?')
-echo "match: $match"
+match=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -o -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> ([0-9]+)([.][0-9]+)?')
+#echo "match: $match"
 len=${#match}
-echo "len: $len"
+#echo "len: $len"
 
 len_temp=$((len - 86))
-echo "len_temp: $len_temp"
+#echo "len_temp: $len_temp"
 
 temperature=${match:86:len_temp}
-echo "temperature: $temperature"
+echo "temperature: $temperature°C"
 
+# get the current system time (reference for debugging):
 ts_out=$(date -Ins)
 echo "ts_out: $ts_out"
 
-# "Generate" JSON file:
-echo "{\"ts\":\"$ts_out\",\"temperature\":$temperature}" > dummy.json
+# "Generate" (minified) JSON file:
+echo "{\"ts\":\"$ts_out\",\"temperature\":$temperature}" > /home/pi/projects/th-owl-temp-scraper/dummy.json
 
-#TODOs: 
-# 1. make timestamp a valid UTC timestamp
+# put the dummy.json somewhere else:
+lftp -f /home/pi/projects/th-owl-temp-scraper/lftp-upload-script
+
+#TODOs:
+# 1. transform the "Letzte Datenabfrage" timestamp from the website to ISO 8601 valid timestamp and write it to the dummy.json file
+#    e.g. "Letzte Datenabfrage: 15.09.2023 21:20 Uhr (MEZ+1h)" == MESZ
 #    https://www.ionos.com/digitalguide/websites/web-development/iso-8601/
-#    Letzte Datenabfrage: 15.09.2023 21:20 Uhr (MEZ+1h) ======> hier kann man MEZ/MESZ ableiten.
+# 2. add other values like humidity, wind speed etc.
+# 3. execute quite/silent, when debugging is done.
+# 4. optimize the parsing of the time stamp with a regex
+
+# cron (to execute this script every 5 minutes) - update interval of data seems to be 10 minutes:
+# */5 * * * * /home/pi/projects/th-owl-temp-scraper/scrape-temp.sh 1> /home/pi/projects/th-owl-temp-scraper/log.txt 2> /home/pi/projects/th-owl-temp-scraper/err.txt
