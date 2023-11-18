@@ -10,7 +10,7 @@ ts_thowl=$(head -c $count2 /home/pi/projects/th-owl-temp-scraper/aktuell.php | t
 echo "ts_thowl: $ts_thowl"
 
 # get the temperature in 2 m height
-match=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -o -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> ([0-9]+)([.][0-9]+)?')
+match=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -o -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> (-?[0-9]+)([.][0-9]+)?')
 #echo "match: $match"
 len=${#match}
 #echo "len: $len"
