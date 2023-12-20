@@ -11,22 +11,25 @@ echo "ts_thowl: $ts_thowl"
 
 # get the temperature in 2 m height
 match=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -o -E -i 'Temperatur 2m:<h5>\(Temp. 10m\)</h5></td><td colspan="2" bgcolor="#E3E3E3" width="120"> (-?[0-9]+)([.][0-9]+)?')
-#echo "match: $match"
 len=${#match}
-#echo "len: $len"
-
 len_temp=$((len - 86))
-#echo "len_temp: $len_temp"
-
 temperature=${match:86:len_temp}
 echo "temperature: $temperature°C"
+
+# get the barometric pressure at station level:
+match_barometric_pressure=$(cat /home/pi/projects/th-owl-temp-scraper/aktuell.php | grep -o -E -i 'hPa<h5>\(([0-9]+)')
+len_match_barometric_pressure=${#match_barometric_pressure}
+len_barometric_pressure=$((len_match_barometric_pressure - 8)) # calculates the length of the measurement only
+#echo "len_barometric_pressure: $len_barometric_pressure"
+pressure=${match_barometric_pressure:8:len_barometric_pressure}
+echo "barometric pressure at station level: $pressure hPa"
 
 # get the current system time (reference for debugging):
 ts_out=$(date -Ins)
 echo "ts_out: $ts_out"
 
 # "Generate" (minified) JSON file:
-echo "{\"ts\":\"$ts_out\",\"temperature\":$temperature}" > /home/pi/projects/th-owl-temp-scraper/dummy.json
+echo "{\"ts\":\"$ts_out\",\"temperature\":$temperature,\"barometric_pressure\":$pressure}" > /home/pi/projects/th-owl-temp-scraper/dummy.json
 
 # put the dummy.json somewhere else:
 lftp -f /home/pi/projects/th-owl-temp-scraper/lftp-upload-script
