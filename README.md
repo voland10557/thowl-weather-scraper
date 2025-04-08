@@ -8,3 +8,28 @@ Add the following line with "crontab -e" to execute the script every 5 minutes:
 ```
 */5 * * * * /home/pi/projects/th-owl-temp-scraper/scrape-temp.sh 1> /home/pi/projects/th-owl-temp-scraper/log.txt 2> /home/pi/projects/th-owl-temp-scraper/err.txt
 ```
+
+
+
+Integrate into your home assistant if you like:
+
+```
+rest:
+  - resource: "https://..../dummy.json"
+    sensor:
+      - name: "Zeitstempel"
+        device_class: timestamp
+        value_template: "{{value_json.ts}}"
+
+      - name: "Temperatur"
+        state_class: measurement
+        device_class: temperature
+        unit_of_measurement: "°C"
+        value_template: "{{value_json.temperature}}"
+
+      - name: "Luftdruck"
+        state_class: measurement
+        device_class: ATMOSPHERIC_PRESSURE
+        unit_of_measurement: "hPa"
+        value_template: "{{value_json.barometric_pressure}}"
+```
