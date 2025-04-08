@@ -9,9 +9,7 @@ Add the following line with "crontab -e" to execute the script every 5 minutes:
 */5 * * * * /home/pi/projects/th-owl-temp-scraper/scrape-temp.sh 1> /home/pi/projects/th-owl-temp-scraper/log.txt 2> /home/pi/projects/th-owl-temp-scraper/err.txt
 ```
 
-
-
-Integrate into your home assistant if you like:
+Integrate into your Home Assistant if you like (add to /homeassistant/configuration.yaml):
 
 ```
 rest:
